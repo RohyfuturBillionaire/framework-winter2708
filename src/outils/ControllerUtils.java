@@ -51,7 +51,7 @@ public class ControllerUtils {
                             for (Method meth : methods) {
                                 if (meth.isAnnotationPresent(Get.class)) {
                                     Get getAnnotation= meth.getAnnotation(Get.class);
-                                    hm.put(getAnnotation.url(),new Mapping(clazz.getSimpleName(),meth.getName()));
+                                    hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
                                 }
                             }
                         }
