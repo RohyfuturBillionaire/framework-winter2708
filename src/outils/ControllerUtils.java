@@ -33,6 +33,7 @@ public class ControllerUtils {
     public static HashMap getAllClassesSelonAnnotation(String packageToScan,Class<?>annotation) throws Exception{
         //List<String> controllerNames = new ArrayList<>();
         HashMap<String,Mapping> hm=new HashMap<>();
+        
         try {
             
             //String path = getClass().getClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
