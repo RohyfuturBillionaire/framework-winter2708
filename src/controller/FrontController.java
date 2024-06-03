@@ -45,7 +45,7 @@ public class FrontController extends HttpServlet {
             out.println("</title>");
             out.println("</head>");
             out.println("<body>");
-            String toPrint="";
+            Object toPrint=null;
             try {
 
             
@@ -55,11 +55,24 @@ public class FrontController extends HttpServlet {
                 Class<?>clas=Class.forName(map.get(cle).getClassName());
                 Method iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
                 Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
-                toPrint=(String)iray.invoke(caller,(Object[])null);
-
+                toPrint=iray.invoke(caller,(Object[])null);
+                if (toPrint instanceof ModelView) {
+                    
+                    ModelView model=(ModelView)toPrint;
+                    String view=model.getUrl();
+                    RequestDispatcher dispat = req.getRequestDispatcher(view);
+                    HashMap <String , Object> modelObjects=model.getData();
+                    for (String nomdata : modelObjects.keySet()) {
+                        req.setAttribute(nomdata,modelObjects.get(nomdata));    
+                    }
+                    dispat.forward(req,res);
+                    
+                }
                 ifUrlExist = true;
+                break;
             }
         }
+        
             if (!ifUrlExist) {
                 out.println("Aucune methode n'est associe a l url : "+url);
             }
