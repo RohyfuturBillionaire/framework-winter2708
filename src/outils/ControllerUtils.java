@@ -34,7 +34,7 @@ public class ControllerUtils {
         //List<String> controllerNames = new ArrayList<>();
         HashMap<String,Mapping> hm=new HashMap<>();
         
-        try {
+        
             
             //String path = getClass().getClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String path = Thread.currentThread().getContextClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
@@ -52,6 +52,11 @@ public class ControllerUtils {
                             for (Method meth : methods) {
                                 if (meth.isAnnotationPresent(Get.class)) {
                                     Get getAnnotation= meth.getAnnotation(Get.class);
+                                    
+                                    if(hm.containsKey(getAnnotation.url())){
+                                        throw new Exception("dupicate method annotation"+getAnnotation.url());
+                                    }
+                                    
                                     hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
                                 }
                             }
@@ -59,10 +64,9 @@ public class ControllerUtils {
                     }
                 }
             }
-           
-        } catch (Exception e) {
-            throw e;
-        }
+            else {
+                throw new Exception("empty package");
+            }
         return hm;
     }
     
