@@ -19,7 +19,7 @@ public class FrontController extends HttpServlet {
                      String package_name = this.getInitParameter("package_name");
                      map =ControllerUtils.getAllClassesSelonAnnotation(package_name,Controller.class);
                  } catch (Exception e) {
-                     e.printStackTrace();
+                    throw new  ServletException (e);
                  }
          
              }
@@ -34,29 +34,27 @@ public class FrontController extends HttpServlet {
         // }
 
         protected void processRequest(HttpServletRequest req,HttpServletResponse res)
-         throws IOException {
+         throws IOException,ServletException {
             PrintWriter out=res.getWriter();
             StringBuffer url= req.getRequestURL();
             Boolean ifUrlExist = false;
             String packageToScan = this.getInitParameter("package_name");
-            out.println("<!DOCTYPE html>");
-            out.println("<head>");
-            out.println("<title>");
-            out.println("</title>");
-            out.println("</head>");
-            out.println("<body>");
+          
             Object toPrint=null;
             try {
 
             
         for (String cle : map.keySet()) {
             if(cle.equals(req.getRequestURI().toString())){
-                out.println("Votre url : "+url +" est associe a la methode : "+ map.get(cle).getMethodeName()+" dans la classe : "+(map.get(cle).getClassName()));
                 Class<?>clas=Class.forName(map.get(cle).getClassName());
                 Method iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
                 Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
                 toPrint=iray.invoke(caller,(Object[])null);
-                if (toPrint instanceof ModelView) {
+                if (toPrint instanceof String ) {
+                    out.print(toPrint);
+                }
+                
+                else if (toPrint instanceof ModelView) {
                     
                     ModelView model=(ModelView)toPrint;
                     String view=model.getUrl();
@@ -66,24 +64,24 @@ public class FrontController extends HttpServlet {
                         req.setAttribute(nomdata,modelObjects.get(nomdata));    
                     }
                     dispat.forward(req,res);
-                    
+                }
+
+                else {
+                    throw new Exception("invalid type");
                 }
                 ifUrlExist = true;
                 break;
             }
         }
-        
             if (!ifUrlExist) {
-                out.println("Aucune methode n'est associe a l url : "+url);
+                throw new Exception("Aucune methode n'est associe a l url : "+url);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           throw new ServletException(e);
         }
 
-            out.println(toPrint);
-            out.println("<h2> ito le zavatra "+url+"</h2>");
-            out.println("</body>");
-            out.println("</html>");
+           
+           
         
         }
 
