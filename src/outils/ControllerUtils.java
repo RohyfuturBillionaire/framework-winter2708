@@ -1,10 +1,12 @@
 package outils;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 public class ControllerUtils {
 
     public  List<String> getAllAnnoted(String packageToScan,Class annotation) throws Exception{
@@ -65,6 +67,34 @@ public class ControllerUtils {
                 throw new Exception("empty package");
             }
         return hm;
+    }
+
+    public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
+        List<Object> ls = new ArrayList<Object>();
+        for (Parameter param : method.getParameters()) {
+            String key = null;
+            System.out.println(param.getName());
+            if (params.containsKey(param.getName())) {
+                key = param.getName();
+            } else if (param.isAnnotationPresent(Param.class)
+                    && params.containsKey(param.getAnnotation(Param.class).paramName())) {
+                key = param.getAnnotation(Param.class).paramName();
+            }
+            /// Traitement type
+            Class<?> typage = param.getType();
+            /// Traitement values
+           
+            if (params.get(key).length == 1) {
+                ls.add(this.parse(params.get(key)[0],typage));
+            } 
+            else if (params.get(key).length > 1) {
+                ls.add(this.parse(params.get(key),typage));
+            } 
+            else if (params.get(key) == null) {
+                ls.add(null);
+            }
+        }
+        return ls.toArray();
     }
     
 }
