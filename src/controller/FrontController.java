@@ -24,7 +24,6 @@ public class FrontController extends HttpServlet {
          
              }
 
-        
         // public void init() throws ServletException{
         //         try {
         //                 getController();
@@ -80,10 +79,7 @@ public class FrontController extends HttpServlet {
            throw new ServletException(e);
         }
 
-           
-           
-        
-        }
+    }
 
         protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {

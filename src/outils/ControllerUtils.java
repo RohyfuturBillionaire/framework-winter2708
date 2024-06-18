@@ -33,10 +33,7 @@ public class ControllerUtils {
     public static HashMap getAllClassesSelonAnnotation(String packageToScan,Class<?>annotation) throws Exception{
         //List<String> controllerNames = new ArrayList<>();
         HashMap<String,Mapping> hm=new HashMap<>();
-        
-        
-            
-            //String path = getClass().getClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
+         //String path = getClass().getClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String path = Thread.currentThread().getContextClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String decodedPath = URLDecoder.decode(path, "UTF-8");
             File packageDir = new File(decodedPath);
