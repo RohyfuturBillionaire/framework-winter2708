@@ -8,9 +8,7 @@ import java.util.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import outils.*;
-/**
- * FrontController
- */
+
 public class FrontController extends HttpServlet {
          HashMap<String,Mapping> map;
          public void init() throws ServletException {
@@ -22,13 +20,7 @@ public class FrontController extends HttpServlet {
                  }
         }
 
-        // public void init() throws ServletException{
-        //         try {
-        //                 getController();
-        //         } catch (Exception e) {
-        //                 e.getStackTrace();
-        //         }
-        // }
+        
 
         protected void processRequest(HttpServletRequest req,HttpServletResponse res) throws IOException,ServletException {
             PrintWriter out=res.getWriter();
@@ -59,9 +51,7 @@ public class FrontController extends HttpServlet {
                         iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
                         toPrint=iray.invoke(caller,(Object[])null);
                     }
-                    
-                //    Method [] irays=clas.getDeclaredMethods();
-                //    irays[0].getName();
+                
                 
                 if (toPrint instanceof String ) {
                     out.print(toPrint);
