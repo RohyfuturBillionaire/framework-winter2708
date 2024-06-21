@@ -35,21 +35,23 @@ public class FrontController extends HttpServlet {
             StringBuffer url= req.getRequestURL();
             Boolean ifUrlExist = false;
             Object toPrint=null;
-            Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+            
             ControllerUtils cont= new ControllerUtils();
             try {
             for (String cle : map.keySet()) {
                 if(cle.equals(req.getRequestURI().toString())){
                     Class<?>clas=Class.forName(map.get(cle).getClassName());
-                    Map<String,String []> parameters =req.getParameters();
+                    Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+                    Map<String,String []> parameters =req.getParameterMap();
                     Method iray=null;
                     if (parameters!=null) {
                         Method [] thod=clas.getDeclaredMethods();
                         for (Method method : thod) {
                             if (method.getName()==map.get(cle).getMethodeName()) {
                                     iray=method;
-                            }
-                            break;
+                                    break;
+                                }
+                            
                         }
                         toPrint=iray.invoke(caller,cont.getArgs(parameters, iray));
                     }
