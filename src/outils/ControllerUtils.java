@@ -8,6 +8,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 public class ControllerUtils {
+    public Object parse(Object o, Class<?> typage) {
+        if (typage.equals(int.class)) {
+            return Integer.parseInt((String) o);
+        } else if (typage.equals(double.class)) {
+            return Double.parseDouble((String) o);
+        } else if (typage.equals(boolean.class)) {
+            return Boolean.parseBoolean((String) o);
+
+        } else if (typage.equals(byte.class)) {
+            return Byte.parseByte((String) o);
+
+        } else if (typage.equals(float.class)) {
+            return Float.parseFloat((String) o);
+
+        } else if (typage.equals(short.class)) {
+            return Short.parseShort((String) o);
+
+        } else if (typage.equals(long.class)) {
+            return Long.parseLong((String) o);
+
+        }
+        return typage.cast(o);
+    }
 
     public  List<String> getAllAnnoted(String packageToScan,Class annotation) throws Exception{
 
@@ -77,8 +100,8 @@ public class ControllerUtils {
             if (params.containsKey(param.getName())) {
                 key = param.getName();
             } else if (param.isAnnotationPresent(Param.class)
-                    && params.containsKey(param.getAnnotation(Param.class).paramName())) {
-                key = param.getAnnotation(Param.class).paramName();
+                    && params.containsKey(param.getAnnotation(Param.class).name())) {
+                key = param.getAnnotation(Param.class).name();
             }
             /// Traitement type
             Class<?> typage = param.getType();

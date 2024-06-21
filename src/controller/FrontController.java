@@ -34,8 +34,9 @@ public class FrontController extends HttpServlet {
             PrintWriter out=res.getWriter();
             StringBuffer url= req.getRequestURL();
             Boolean ifUrlExist = false;
-            String packageToScan=this.getInitParameter("package_name");
             Object toPrint=null;
+            Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+            ControllerUtils cont= new ControllerUtils();
             try {
             for (String cle : map.keySet()) {
                 if(cle.equals(req.getRequestURI().toString())){
@@ -43,19 +44,29 @@ public class FrontController extends HttpServlet {
                     Map<String,String []> parameters =req.getParameters();
                     Method iray=null;
                     if (parameters!=null) {
-                        iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
+                        Method [] thod=clas.getDeclaredMethods();
+                        for (Method method : thod) {
+                            if (method.getName()==map.get(cle).getMethodeName()) {
+                                    iray=method;
+                            }
+                            break;
+                        }
+                        toPrint=iray.invoke(caller,cont.getArgs(parameters, iray));
                     }
                     else{
                         iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
+                        toPrint=iray.invoke(caller,(Object[])null);
                     }
-                    Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
-                    toPrint=iray.invoke(caller,(Object[])null);
+                    
+                //    Method [] irays=clas.getDeclaredMethods();
+                //    irays[0].getName();
+                
                 if (toPrint instanceof String ) {
                     out.print(toPrint);
                  } else if (toPrint instanceof ModelView) {
                     ModelView model=(ModelView)toPrint;
                     String view=model.getUrl();
-                    RequestDispatcher dispat = req.getRequestDispatcher(view);
+                    RequestDispatcher dispat = req.getRequestDispatcher(view); 
                     HashMap <String , Object> modelObjects=model.getData();
                     for (String nomdata : modelObjects.keySet()) {
                         req.setAttribute(nomdata,modelObjects.get(nomdata));    
