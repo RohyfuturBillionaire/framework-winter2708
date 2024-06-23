@@ -12,7 +12,7 @@ mkdir %temp%
 for /f "delims=" %%i in (%nomSrcTxt%) do set src=%src% %%i
 
 robocopy %webxml% %web2% /E
-javac -cp  "%lib%\*" %src% -d  %temp%  
+javac -parameters -cp  "%lib%\*" %src% -d  %temp%  
 cd %temp% && jar cvf %nomAppli%.jar * 
 copy %nomAppli%.jar %classpath%
 rm %nomAppli%.jar

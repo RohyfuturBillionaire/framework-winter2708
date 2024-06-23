@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.lang.reflect.Field;
+
 public class ControllerUtils {
     public Object parse(Object o, Class<?> typage) {
         if (typage.equals(int.class)) {
@@ -74,7 +76,6 @@ public class ControllerUtils {
                             for (Method meth : methods) {
                                 if (meth.isAnnotationPresent(Get.class)) {
                                     Get getAnnotation= meth.getAnnotation(Get.class);
-                                    
                                     if(hm.containsKey(getAnnotation.url())){
                                         throw new Exception("dupicate method annotation"+getAnnotation.url());
                                     }
@@ -92,32 +93,81 @@ public class ControllerUtils {
         return hm;
     }
 
+    // public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
+    //     List<Object> ls = new ArrayList<Object>();
+    //     for (Parameter param : method.getParameters()) {
+    //         String key = null;
+    //         System.out.println(param.getName());
+    //         if (params.containsKey(param.getName())) {
+    //             key = param.getName();
+    //         } else if (param.isAnnotationPresent(Param.class)
+    //                 && params.containsKey(param.getAnnotation(Param.class).name())) {
+    //             key = param.getAnnotation(Param.class).name();
+    //         }
+    //         /// Traitement type
+    //         Class<?> typage = param.getType();
+    //         /// Traitement values
+           
+    //         if (params.get(key).length == 1) {
+    //             ls.add(this.parse(params.get(key)[0],typage));
+    //         } 
+    //         else if (params.get(key).length > 1) {
+    //             ls.add(this.parse(params.get(key),typage));
+    //         } 
+    //         else if (params.get(key) == null) {
+    //             ls.add(null);
+    //         }
+    //     }
+    //     return ls.toArray();
+    // }
+
     public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         for (Parameter param : method.getParameters()) {
             String key = null;
-            System.out.println(param.getName());
-            if (params.containsKey(param.getName())) {
-                key = param.getName();
-            } else if (param.isAnnotationPresent(Param.class)
-                    && params.containsKey(param.getAnnotation(Param.class).name())) {
-                key = param.getAnnotation(Param.class).name();
-            }
             /// Traitement type
             Class<?> typage = param.getType();
-            /// Traitement values
-           
-            if (params.get(key).length == 1) {
-                ls.add(this.parse(params.get(key)[0],typage));
-            } 
-            else if (params.get(key).length > 1) {
-                ls.add(this.parse(params.get(key),typage));
-            } 
-            else if (params.get(key) == null) {
-                ls.add(null);
+            if (!param.getType().isPrimitive() && !param.getType().equals(String.class)) {
+                Class<?> c=param.getType();
+                String nomObjet=null;
+                if(c.isAnnotationPresent(ObjectParam.class)){
+                    nomObjet=c.getAnnotation(ObjectParam.class).name();
+                }
+                else{
+                    nomObjet=param.getName();
+                }
+                Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
+                ///prendre les attributs
+                Field[] f=c.getDeclaredFields();
+                for (Field field : f) {
+                    System.out.println(nomObjet+"."+field.getName());
+                        if (params.containsKey(nomObjet+"."+field.getName())) {
+                            System.out.println(params.containsKey(nomObjet+"."+field.getName()));
+                            String fieldName=field.getName().substring(0, 1).toUpperCase() +field.getName().substring(1);
+                            Method toInvoke=c.getDeclaredMethod("set"+fieldName,field.getType());
+                            toInvoke.invoke(o,this.parse(params.get(nomObjet+"."+field.getName())[0],field.getType()));
+                        }
+                }
+                ls.add(o);
+            } else {
+                if (params.containsKey(param.getName())) {
+                    key = param.getName();
+                } else if (param.isAnnotationPresent(Param.class)
+                        && params.containsKey(param.getAnnotation(Param.class).name())) {
+                    key = param.getAnnotation(Param.class).name();
+                }
+                /// Traitement values
+                if (params.get(key).length == 1) {
+                    ls.add(this.parse(params.get(key)[0], typage));
+                } else if (params.get(key).length > 1) {
+                    ls.add(this.parse(params.get(key), typage));
+                } else if (params.get(key) == null) {
+                    ls.add(null);
+                }
             }
+
         }
         return ls.toArray();
-    }
+    }   
     
 }

@@ -27,11 +27,15 @@ public class FrontController extends HttpServlet {
             StringBuffer url= req.getRequestURL();
             Boolean ifUrlExist = false;
             Object toPrint=null;
+            String urL=req.getRequestURI().toString();
+            if (urL.contains("?")) {
+                urL=urL.split("?")[0];
+            }
             
             ControllerUtils cont= new ControllerUtils();
             try {
             for (String cle : map.keySet()) {
-                if(cle.equals(req.getRequestURI().toString())){
+                if(cle.equals(urL)){
                     Class<?>clas=Class.forName(map.get(cle).getClassName());
                     Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
                     Map<String,String []> parameters =req.getParameterMap();
