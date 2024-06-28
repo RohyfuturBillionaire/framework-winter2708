@@ -130,7 +130,7 @@ public class ControllerUtils {
             if (!param.getType().isPrimitive() && !param.getType().equals(String.class)) {
                 Class<?> c=param.getType();
                 String nomObjet=null;
-                if(c.isAnnotationPresent(ObjectParam.class)){
+                if(param.isAnnotationPresent(ObjectParam.class)){
                     nomObjet=c.getAnnotation(ObjectParam.class).name();
                 }
                 else{
