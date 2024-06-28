@@ -76,7 +76,10 @@ public class FrontController extends HttpServlet {
                 throw new Exception("Aucune methode n'est associe a l url : "+url);
             }
         } catch (Exception e) {
-           throw new ServletException(e);
+        //    throw new ServletException(e);
+           req.setAttribute("error",e.getMessage()+"erreru pas de parameter"); 
+           RequestDispatcher dispat = req.getRequestDispatcher("error.jsp");
+           dispat.forward(req,res);
         }
 
     }
