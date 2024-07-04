@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpSession;
+
 import java.lang.reflect.Field;
 
 public class ControllerUtils {
@@ -33,6 +36,17 @@ public class ControllerUtils {
         }
         return typage.cast(o);
     }
+
+    public boolean checkSessionNeed(Method method)
+        {
+            for (Parameter iterable_element : method.getParameters()) {
+                
+                if (iterable_element.getClass().equals(MySession.class)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
     public  List<String> getAllAnnoted(String packageToScan,Class annotation) throws Exception{
 
@@ -121,7 +135,7 @@ public class ControllerUtils {
     //     return ls.toArray();
     // }
 
-    public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
+    public Object[] getArgs(Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         for (Parameter param : method.getParameters()) {
             String key = null;
@@ -129,8 +143,12 @@ public class ControllerUtils {
             Class<?> typage = param.getType();
             if (!param.getType().isPrimitive() && !param.getType().equals(String.class)) {
                 Class<?> c=param.getType();
-                String nomObjet=null;
-                if(c.isAnnotationPresent(ObjectParam.class)){
+                if (c.equals(MySession.class)) {
+                    ls.add( new MySession(session));
+                }
+                else {
+                    String nomObjet=null;
+                if(param.isAnnotationPresent(ObjectParam.class)){
                     nomObjet=c.getAnnotation(ObjectParam.class).name();
                 }
                 else{
@@ -149,6 +167,8 @@ public class ControllerUtils {
                         }
                 }
                 ls.add(o);
+                }
+                
             } else {
                 if (params.containsKey(param.getName())) {
                     key = param.getName();
