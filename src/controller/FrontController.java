@@ -37,7 +37,7 @@ public class FrontController extends HttpServlet {
             for (String cle : map.keySet()) {
                 if(cle.equals(urL)){
                     Class<?>clas=Class.forName(map.get(cle).getClassName());
-                    Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+                    Object caller=ControllerUtils.checkSession(clas,req.getSession());
                     Map<String,String []> parameters =req.getParameterMap();
                     Method iray=null;
                     if (parameters!=null) {
@@ -47,9 +47,13 @@ public class FrontController extends HttpServlet {
                                     iray=method;
                                     break;
                                 }
-                            
                         }
-                        toPrint=iray.invoke(caller,cont.getArgs(parameters, iray));
+                        if (cont.checkSessionNeed(iray)) {
+                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
+                        }
+                        else{
+                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
+                        }
                     }
                     else{
                         iray=clas.getDeclaredMethod(map.get(cle).getMethodeName(),(Class<?>[])null);
@@ -63,10 +67,14 @@ public class FrontController extends HttpServlet {
                     ModelView model=(ModelView)toPrint;
                     String view=model.getUrl();
                     RequestDispatcher dispat = req.getRequestDispatcher(view); 
-                    HashMap <String , Object> modelObjects=model.getData();
+                    HashMap <String , Object> modelObjects=null;
+                    if (model.getData()!=null) {
+                    modelObjects=model.getData();
                     for (String nomdata : modelObjects.keySet()) {
                         req.setAttribute(nomdata,modelObjects.get(nomdata));    
-                    }
+                    }    
+                }
+                   
                     dispat.forward(req,res);
                 } else { throw new Exception("invalid type"); }
                 ifUrlExist = true;
