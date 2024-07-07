@@ -37,7 +37,7 @@ public class FrontController extends HttpServlet {
             for (String cle : map.keySet()) {
                 if(cle.equals(urL)){
                     Class<?>clas=Class.forName(map.get(cle).getClassName());
-                    Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+                    Object caller=ControllerUtils.checkSession(clas,req.getSession());
                     Map<String,String []> parameters =req.getParameterMap();
                     Method iray=null;
                     if (parameters!=null) {

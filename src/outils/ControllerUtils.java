@@ -47,6 +47,17 @@ public class ControllerUtils {
             }
             return false;
         }
+    public static Object checkSession(Class<?> clas,HttpSession reqSession) throws Exception
+        {
+                Field [] flds= clas.getDeclaredFields();
+                Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
+                for (Field field : flds) {
+                        if (field.getType().equals(MySession.class)) {
+                            caller=clas.getDeclaredConstructor().newInstance( new MySession(reqSession));
+                        }
+                }
+            return caller;
+        }
 
     public  List<String> getAllAnnoted(String packageToScan,Class annotation) throws Exception{
 
