@@ -53,7 +53,8 @@ public class ControllerUtils {
                 Object caller=clas.getDeclaredConstructor().newInstance((Object[])null);
                 for (Field field : flds) {
                         if (field.getType().equals(MySession.class)) {
-                            caller=clas.getDeclaredConstructor().newInstance( new MySession(reqSession));
+                            caller=clas.getDeclaredConstructor(MySession.class).newInstance( new MySession(reqSession));
+                            
                         }
                 }
             return caller;
