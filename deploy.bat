@@ -1,10 +1,10 @@
 set nomAppli=testMVC
 set nomSrcTxt=java_files_list.txt
-set lib=C:\Users\rohyr\Documents\java\winter\lib\
-set classpath=C:\Users\rohyr\Documents\java\winterTest\lib
-set web2=C:\Users\rohyr\Documents\java\winterTest\webxml
-set temp=C:\Users\rohyr\Documents\java\winter\temp
-set webxml=C:\Users\rohyr\Documents\java\winter\webxml
+set lib=C:\Users\rohyr\Documents\study\S4\java\winter\lib\
+set classpath=C:\Users\rohyr\Documents\study\S4\java\winterTest\lib
+set web2=C:\Users\rohyr\Documents\study\S4\java\winterTest\webxml
+set temp=C:\Users\rohyr\Documents\study\S4\java\winter\temp
+set webxml=C:\Users\rohyr\Documents\study\S4\java\winter\webxml
 
 rmdir /s /q %temp%
 mkdir %temp%

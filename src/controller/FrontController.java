@@ -5,16 +5,19 @@ import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.text.Annotation;
 import java.util.*;
+
+import com.google.gson.Gson;
+
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import outils.*;
 
 public class FrontController extends HttpServlet {
-         HashMap<String,Mapping> map;
+         HashMap<String,Mapping> map= new HashMap<>();
          public void init() throws ServletException {
                  try {
                     String package_name = this.getInitParameter("package_name");
-                    map =ControllerUtils.getAllClassesSelonAnnotation(package_name,Controller.class);
+                    ControllerUtils.getAllClassesSelonAnnotation(package_name,Controller.class,map);
                  } catch (Exception e) {
                     throw new ServletException(e);
                  }
@@ -52,7 +55,7 @@ public class FrontController extends HttpServlet {
                             toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
                         }
                         else{
-                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
+                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,null));
                         }
                     }
                     else{
@@ -60,7 +63,35 @@ public class FrontController extends HttpServlet {
                         toPrint=iray.invoke(caller,(Object[])null);
                     }
                 
-                
+                if (ControllerUtils.checkRestMethod(iray,RestApi.class)) {
+                    Gson json= new Gson();
+                    if (toPrint instanceof String ) {
+                        
+                        String restJson=json.toJson(toPrint, String.class);
+                        out.print(restJson);
+                     } else if (toPrint instanceof ModelView) {
+                        ModelView model=(ModelView)toPrint;
+                        // String view=model.getUrl();
+                        
+                        // RequestDispatcher dispat = req.getRequestDispatcher(view); 
+                        HashMap <String , Object> modelObjects=null;
+                        if (model.getData()!=null) {
+                        modelObjects=model.getData();
+                        // for (String nomdata : modelObjects.keySet()) {
+                        //     req.setAttribute(nomdata,modelObjects.get(nomdata));    
+                        // }
+                        out.print(json.toJson(modelObjects,HashMap.class));    
+                    }
+                       
+                        // dispat.forward(req,res);
+                    } else { throw new Exception("invalid type"); }
+     
+                    
+                }
+
+                else{
+                    
+                    
                 if (toPrint instanceof String ) {
                     out.print(toPrint);
                  } else if (toPrint instanceof ModelView) {
@@ -76,7 +107,9 @@ public class FrontController extends HttpServlet {
                 }
                    
                     dispat.forward(req,res);
-                } else { throw new Exception("invalid type"); }
+                     } else { throw new Exception("invalid type"); }
+                }
+                
                 ifUrlExist = true;
                 break;
             }

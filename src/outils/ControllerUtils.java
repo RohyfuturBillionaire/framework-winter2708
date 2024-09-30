@@ -10,6 +10,7 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 public class ControllerUtils {
@@ -83,9 +84,11 @@ public class ControllerUtils {
         return name;
     }
 
-    public static HashMap getAllClassesSelonAnnotation(String packageToScan,Class<?>annotation) throws Exception{
+    
+
+    public static void getAllClassesSelonAnnotation(String packageToScan,Class<?>annotation,HashMap<String,Mapping> map) throws Exception{
         //List<String> controllerNames = new ArrayList<>();
-        HashMap<String,Mapping> hm=new HashMap<>();
+        HashMap<String,Mapping> hm=map;
          //String path = getClass().getClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String path = Thread.currentThread().getContextClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String decodedPath = URLDecoder.decode(path, "UTF-8");
@@ -103,7 +106,7 @@ public class ControllerUtils {
                                 if (meth.isAnnotationPresent(Get.class)) {
                                     Get getAnnotation= meth.getAnnotation(Get.class);
                                     if(hm.containsKey(getAnnotation.url())){
-                                        throw new Exception("dupicate method annotation"+getAnnotation.url());
+                                        throw new Exception("duplicate method annotation"+getAnnotation.url());
                                     }
                                     
                                     hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
@@ -116,8 +119,17 @@ public class ControllerUtils {
             else {
                 throw new Exception("empty package");
             }
-        return hm;
+        
     }
+
+  public static boolean checkRestMethod(Method method,Class<RestApi> annotationClass)
+        {
+
+                if (method.isAnnotationPresent(annotationClass)) {
+                    return true;
+                }
+                return false;
+        }
 
     // public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
     //     List<Object> ls = new ArrayList<Object>();
@@ -153,6 +165,7 @@ public class ControllerUtils {
             String key = null;
             /// Traitement type
             Class<?> typage = param.getType();
+           
             if (!param.getType().isPrimitive() && !param.getType().equals(String.class)) {
                 Class<?> c=param.getType();
                 if (c.equals(MySession.class)) {
@@ -169,6 +182,7 @@ public class ControllerUtils {
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
                 ///prendre les attributs
                 Field[] f=c.getDeclaredFields();
+               
                 for (Field field : f) {
                     System.out.println(nomObjet+"."+field.getName());
                         if (params.containsKey(nomObjet+"."+field.getName())) {
@@ -189,13 +203,13 @@ public class ControllerUtils {
                     key = param.getAnnotation(Param.class).name();
                 }
                 /// Traitement values
-                if (params.get(key).length == 1) {
+                 if (params.get(key) == null) {
+                    ls.add(null);
+                }else if (params.get(key).length == 1) {
                     ls.add(this.parse(params.get(key)[0], typage));
                 } else if (params.get(key).length > 1) {
                     ls.add(this.parse(params.get(key), typage));
-                } else if (params.get(key) == null) {
-                    ls.add(null);
-                }
+                } 
             }
 
         }
