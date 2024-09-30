@@ -10,6 +10,7 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 public class ControllerUtils {
@@ -121,6 +122,15 @@ public class ControllerUtils {
         
     }
 
+  public static boolean checkRestMethod(Method method,Class<RestApi> annotationClass)
+        {
+
+                if (method.isAnnotationPresent(annotationClass)) {
+                    return true;
+                }
+                return false;
+        }
+
     // public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
     //     List<Object> ls = new ArrayList<Object>();
     //     for (Parameter param : method.getParameters()) {
@@ -193,13 +203,13 @@ public class ControllerUtils {
                     key = param.getAnnotation(Param.class).name();
                 }
                 /// Traitement values
-                if (params.get(key).length == 1) {
+                 if (params.get(key) == null) {
+                    ls.add(null);
+                }else if (params.get(key).length == 1) {
                     ls.add(this.parse(params.get(key)[0], typage));
                 } else if (params.get(key).length > 1) {
                     ls.add(this.parse(params.get(key), typage));
-                } else if (params.get(key) == null) {
-                    ls.add(null);
-                }
+                } 
             }
 
         }

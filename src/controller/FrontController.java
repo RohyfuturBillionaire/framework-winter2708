@@ -18,7 +18,6 @@ public class FrontController extends HttpServlet {
                  try {
                     String package_name = this.getInitParameter("package_name");
                     ControllerUtils.getAllClassesSelonAnnotation(package_name,Controller.class,map);
-                    ControllerUtils.getAllClassesSelonAnnotation(package_name,RestApi.class, map);
                  } catch (Exception e) {
                     throw new ServletException(e);
                  }
@@ -56,7 +55,7 @@ public class FrontController extends HttpServlet {
                             toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
                         }
                         else{
-                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,req.getSession()));
+                            toPrint=iray.invoke(caller,cont.getArgs(parameters,iray,null));
                         }
                     }
                     else{
@@ -64,7 +63,7 @@ public class FrontController extends HttpServlet {
                         toPrint=iray.invoke(caller,(Object[])null);
                     }
                 
-                if (clas.isAnnotationPresent(RestApi.class)) {
+                if (ControllerUtils.checkRestMethod(iray,RestApi.class)) {
                     Gson json= new Gson();
                     if (toPrint instanceof String ) {
                         
@@ -108,7 +107,7 @@ public class FrontController extends HttpServlet {
                 }
                    
                     dispat.forward(req,res);
-                } else { throw new Exception("invalid type"); }
+                     } else { throw new Exception("invalid type"); }
                 }
                 
                 ifUrlExist = true;
