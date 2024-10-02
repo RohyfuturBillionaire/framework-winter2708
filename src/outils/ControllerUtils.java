@@ -103,14 +103,25 @@ public class ControllerUtils {
                         if (clazz.isAnnotationPresent(annotation.asSubclass(java.lang.annotation.Annotation.class))) {
                             Method[]methods=clazz.getDeclaredMethods();
                             for (Method meth : methods) {
-                                if (meth.isAnnotationPresent(Get.class)) {
-                                    Get getAnnotation= meth.getAnnotation(Get.class);
-                                    if(hm.containsKey(getAnnotation.url())){
-                                        throw new Exception("duplicate method annotation"+getAnnotation.url());
+                                
+                                if (meth.isAnnotationPresent(Url.class)) {
+                                    Url getAnnotation= meth.getAnnotation(Url.class);
+                                    if(hm.containsKey(getAnnotation.path())){
+                                        throw new Exception("duplicate method annotation"+getAnnotation.path());
+                                    }
+                                    else if (meth.isAnnotationPresent(Get.class)) {
+                                        hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName(),"Get"));
+                                    }
+    
+                                    else if (meth.isAnnotationPresent(Post.class)){
+                                            hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName(),"Post"));    
+                                        }
+                                    else{
+                                        hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName(),"Get"));
                                     }
                                     
-                                    hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
                                 }
+                                
                             }
                         }
                     }

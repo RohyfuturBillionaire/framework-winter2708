@@ -2,9 +2,11 @@ package outils;
 public class Mapping {
         String className;
         String methodeName;
-        public Mapping(String className, String methodeName) {
+        String  verb;
+        public Mapping(String className, String methodeName,String verb) {
             this.className = className;
             this.methodeName = methodeName;
+            this.verb=verb;
         }
         public String getClassName() {
             return className;
@@ -18,6 +20,15 @@ public class Mapping {
         public void setMethodeName(String methodeName) {
             this.methodeName = methodeName;
         }
+
+        public void setVerb(String verb) {
+            this.verb = verb;
+        }
+
+        public String getVerb() {
+            return verb;
+        }
+
         
     }
 

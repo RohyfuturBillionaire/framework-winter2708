@@ -46,6 +46,7 @@ public class FrontController extends HttpServlet {
                     if (parameters!=null) {
                         Method [] thod=clas.getDeclaredMethods();
                         for (Method method : thod) {
+                            
                             if (method.getName()==map.get(cle).getMethodeName()) {
                                     iray=method;
                                     break;
@@ -65,6 +66,8 @@ public class FrontController extends HttpServlet {
                 
                 if (ControllerUtils.checkRestMethod(iray,RestApi.class)) {
                     Gson json= new Gson();
+
+                 if (map.get(cle).getVerb().equals(req.getMethod())) {
                     if (toPrint instanceof String ) {
                         
                         String restJson=json.toJson(toPrint, String.class);
@@ -84,7 +87,13 @@ public class FrontController extends HttpServlet {
                     }
                        
                         // dispat.forward(req,res);
-                    } else { throw new Exception("invalid type"); }
+                    } else { throw new Exception("invalid type"); } 
+                 }
+
+                 else {
+                    throw new  Exception("bad method");
+                 }
+                    
      
                     
                 }
