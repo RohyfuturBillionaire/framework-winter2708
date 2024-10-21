@@ -103,13 +103,28 @@ public class ControllerUtils {
                         if (clazz.isAnnotationPresent(annotation.asSubclass(java.lang.annotation.Annotation.class))) {
                             Method[]methods=clazz.getDeclaredMethods();
                             for (Method meth : methods) {
-                                if (meth.isAnnotationPresent(Get.class)) {
-                                    Get getAnnotation= meth.getAnnotation(Get.class);
-                                    if(hm.containsKey(getAnnotation.url())){
-                                        throw new Exception("duplicate method annotation"+getAnnotation.url());
+                                  
+                                if (meth.isAnnotationPresent(Url.class)) {
+                                    Url getAnnotation= meth.getAnnotation(Url.class);
+                                    
+                                    
+                                    if (meth.isAnnotationPresent(Get.class)) {
+                                        if(hm.containsKey(getAnnotation.path())){
+                                        
+                                        
+                                        }
+                                        else{
+                                            hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName()));
+                                        }    
+                                    }
+                                    else if (meth.isAnnotationPresent(Post.class)) {
+                                        
                                     }
                                     
-                                    hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
+
+                                    hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName()));
+                                    
+                                   
                                 }
                             }
                         }
@@ -121,8 +136,9 @@ public class ControllerUtils {
             }
         
     }
+  
 
-  public static boolean checkRestMethod(Method method,Class<RestApi> annotationClass)
+  public static boolean checkRestMethod(Method method,Class<Annotation> annotationClass)
         {
 
                 if (method.isAnnotationPresent(annotationClass)) {
