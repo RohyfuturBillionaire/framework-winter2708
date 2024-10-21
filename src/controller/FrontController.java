@@ -39,26 +39,33 @@ public class FrontController extends HttpServlet {
         ControllerUtils cont = new ControllerUtils();
         try {
             for (String cle : map.keySet()) {
-                if (cle.equals(urL)) {
+                if (cle.equals(urL)) {Set<VerbMethod> verbMethods = map.get(cle).getVerbmethods();
                     Class<?> clas = Class.forName(map.get(cle).getClassName());
                     Object caller = ControllerUtils.checkSession(clas, req.getSession());
                     Map<String, String[]> parameters = req.getParameterMap();
                     Method iray = null;
-                    if (parameters != null) {
-                        Method[] thod = clas.getDeclaredMethods();
-                        for (Method method : thod) {
-                            if (method.getName() == map.get(cle).getMethod()) {
+
+                    Method[] thod = clas.getDeclaredMethods();
+                    for (Method method : thod) {
+                        
+                        for (VerbMethod verbMethod : verbMethods) {
+                            if (method.getName().equals(verbMethod.getMethod().getName())) {
                                 iray = method;
                                 break;
                             }
                         }
+                        if (iray != null) {
+                            break;
+                        }
+                    }
+                    if (parameters != null) {
+                       
                         if (cont.checkSessionNeed(iray)) {
                             toPrint = iray.invoke(caller, cont.getArgs(parameters, iray, req.getSession()));
                         } else {
                             toPrint = iray.invoke(caller, cont.getArgs(parameters, iray, null));
                         }
                     } else {
-                        iray = clas.getDeclaredMethod(map.get(cle).getMethodeName(), (Class<?>[]) null);
                         toPrint = iray.invoke(caller, (Object[]) null);
                     }
 

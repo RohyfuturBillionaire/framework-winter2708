@@ -111,18 +111,29 @@ public class ControllerUtils {
                                     if (meth.isAnnotationPresent(Get.class)) {
                                         if(hm.containsKey(getAnnotation.path())){
                                         
+                                            hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"GET"));
                                         
                                         }
                                         else{
-                                            hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName()));
+                                            Mapping m=new Mapping(clazz.getName());
+                                            m.getVerbmethods().add(new VerbMethod(meth,"GET"));
+                                            hm.put(getAnnotation.path(),m);
                                         }    
                                     }
                                     else if (meth.isAnnotationPresent(Post.class)) {
+                                        if(hm.containsKey(getAnnotation.path())){
                                         
+                                            hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"Post"));
+                                        
+                                        }
+                                        else{
+                                            Mapping m=new Mapping(clazz.getName());
+                                            m.getVerbmethods().add(new VerbMethod(meth,"Post"));
+                                            hm.put(getAnnotation.path(),m);
+                                        } 
                                     }
                                     
 
-                                    hm.put(getAnnotation.path(),new Mapping(clazz.getName(),meth.getName()));
                                     
                                    
                                 }
@@ -138,7 +149,7 @@ public class ControllerUtils {
     }
   
 
-  public static boolean checkRestMethod(Method method,Class<Annotation> annotationClass)
+  public static boolean checkRestMethod(Method method,Class<RestApi> annotationClass)
         {
 
                 if (method.isAnnotationPresent(annotationClass)) {
