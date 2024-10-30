@@ -1,12 +1,12 @@
 package outils;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RestApi {
-   
+@Target(ElementType.METHOD)
+public @interface Url {
+    public String path();
 }
