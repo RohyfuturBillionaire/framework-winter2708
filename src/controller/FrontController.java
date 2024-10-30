@@ -120,9 +120,8 @@ public class FrontController extends HttpServlet {
                     break;
                 }
             }
-
-        } if (!ifUrlExist) {
-            res.setStatus(HttpServletResponse.SC_NOT_FOUND); // Sets the status code to 404
+            if (!ifUrlExist) {
+                res.setStatus(HttpServletResponse.SC_NOT_FOUND); // Sets the status code to 404
             res.setContentType("text/html");
             out.print("<!DOCTYPE html>");
             out.print("<html lang=\"en\">");
@@ -142,8 +141,7 @@ public class FrontController extends HttpServlet {
             out.print("<p>Please check the URL or go back to the homepage.</p>");
             out.print("</body>");
             out.print("</html>");
-        }
-           
+            }
         } catch (Exception e) {
             throw new ServletException(e);
         }
