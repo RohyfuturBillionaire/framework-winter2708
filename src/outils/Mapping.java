@@ -1,23 +1,33 @@
 package outils;
+
+import java.util.Set;
+
 public class Mapping {
         String className;
-        String methodeName;
-        public Mapping(String className, String methodeName) {
-            this.className = className;
-            this.methodeName = methodeName;
+        Set<VerbMethod> verbmethods= new CustomSet<>();
+        
+        
+        public void setVerbmethods(Set<VerbMethod> verbmethods) {
+            this.verbmethods = verbmethods;
         }
+        
         public String getClassName() {
             return className;
         }
+        
         public void setClassName(String className) {
             this.className = className;
         }
-        public String getMethodeName() {
-            return methodeName;
+
+        public Set<VerbMethod> getVerbmethods() {
+            return verbmethods;
         }
-        public void setMethodeName(String methodeName) {
-            this.methodeName = methodeName;
+        
+       public Mapping(String classNames){
+            this.className=className;
+            
         }
+        
         
     }
 

@@ -103,13 +103,39 @@ public class ControllerUtils {
                         if (clazz.isAnnotationPresent(annotation.asSubclass(java.lang.annotation.Annotation.class))) {
                             Method[]methods=clazz.getDeclaredMethods();
                             for (Method meth : methods) {
-                                if (meth.isAnnotationPresent(Get.class)) {
-                                    Get getAnnotation= meth.getAnnotation(Get.class);
-                                    if(hm.containsKey(getAnnotation.url())){
-                                        throw new Exception("duplicate method annotation"+getAnnotation.url());
+                                  
+                                if (meth.isAnnotationPresent(Url.class)) {
+                                    Url getAnnotation= meth.getAnnotation(Url.class);
+                                    
+                                    
+                                    if (meth.isAnnotationPresent(Get.class)) {
+                                        if(hm.containsKey(getAnnotation.path())){
+                                        
+                                            hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"GET"));
+                                        
+                                        }
+                                        else{
+                                            Mapping m=new Mapping(clazz.getName());
+                                            m.getVerbmethods().add(new VerbMethod(meth,"GET"));
+                                            hm.put(getAnnotation.path(),m);
+                                        }    
+                                    }
+                                    else if (meth.isAnnotationPresent(Post.class)) {
+                                        if(hm.containsKey(getAnnotation.path())){
+                                        
+                                            hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"Post"));
+                                        
+                                        }
+                                        else{
+                                            Mapping m=new Mapping(clazz.getName());
+                                            m.getVerbmethods().add(new VerbMethod(meth,"Post"));
+                                            hm.put(getAnnotation.path(),m);
+                                        } 
                                     }
                                     
-                                    hm.put(getAnnotation.url(),new Mapping(clazz.getName(),meth.getName()));
+
+                                    
+                                   
                                 }
                             }
                         }
@@ -121,6 +147,7 @@ public class ControllerUtils {
             }
         
     }
+  
 
   public static boolean checkRestMethod(Method method,Class<RestApi> annotationClass)
         {
