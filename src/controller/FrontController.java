@@ -114,8 +114,27 @@ public class FrontController extends HttpServlet {
                 break;
             }
         } if (!ifUrlExist) {
-                throw new Exception("Aucune methode n'est associe a l url : "+url);
-            }
+            res.setStatus(HttpServletResponse.SC_NOT_FOUND); // Sets the status code to 404
+            res.setContentType("text/html");
+            out.print("<!DOCTYPE html>");
+            out.print("<html lang=\"en\">");
+            out.print("<head>");
+            out.print("<meta charset=\"UTF-8\">");
+            out.print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+            out.print("<title>404 - Page Not Found</title>");
+            out.print("<style>");
+            out.print("body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }");
+            out.print("h1 { font-size: 50px; color: #FF6347; }");
+            out.print("p { font-size: 20px; color: #333; }");
+            out.print("</style>");
+            out.print("</head>");
+            out.print("<body>");
+            out.print("<h1>404</h1>");
+            out.print("<p>Oops! The page you are looking for does not exist.</p>");
+            out.print("<p>Please check the URL or go back to the homepage.</p>");
+            out.print("</body>");
+            out.print("</html>");
+        }
         } catch (Exception e) {
            throw new ServletException(e);
         }
