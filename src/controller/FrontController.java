@@ -126,6 +126,7 @@ public class FrontController extends HttpServlet {
             out.print("<!DOCTYPE html>");
             out.print("<html lang=\"en\">");
             out.print("<head>");
+
             out.print("<meta charset=\"UTF-8\">");
             out.print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
             out.print("<title>404 - Page Not Found</title>");
