@@ -37,7 +37,8 @@ public class FrontController extends HttpServlet {
         ControllerUtils cont = new ControllerUtils();
         try {
             for (String cle : map.keySet()) {
-                if (cle.equals(urL)) {Set<VerbMethod> verbMethods = map.get(cle).getVerbmethods();
+                if (cle.equals(urL)) {
+                    Set<VerbMethod> verbMethods = map.get(cle).getVerbmethods();
                     Class<?> clas = Class.forName(map.get(cle).getClassName());
                     Object caller = ControllerUtils.checkSession(clas, req.getSession());
                     Map<String, String[]> parameters = req.getParameterMap();
@@ -59,9 +60,15 @@ public class FrontController extends HttpServlet {
                     if (parameters != null) {
                        
                         if (cont.checkSessionNeed(iray)) {
-                            toPrint = iray.invoke(caller, cont.getArgs(parameters, iray, req.getSession()));
+                            
+                            toPrint = iray.invoke(caller, cont.getArgs(parameters, iray,req.getSession(),null));
+                        
+                        }else if (req.getContentType() != null && req.getContentType().toLowerCase().startsWith("multipart/")) {
+                           
+                            toPrint = iray.invoke(caller, cont.getArgs(parameters, iray,req.getSession(),req.getPart("file")));
+                            
                         } else {
-                            toPrint = iray.invoke(caller, cont.getArgs(parameters, iray, null));
+                            toPrint = iray.invoke(caller, cont.getArgs(parameters, iray, null,null));
                         }
                     } else {
                         toPrint = iray.invoke(caller, (Object[]) null);

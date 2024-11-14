@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -186,7 +187,7 @@ public class ControllerUtils {
     //     return ls.toArray();
     // }
 
-    public Object[] getArgs(Map<String, String[]> params, Method method,HttpSession session) throws Exception {
+    public Object[] getArgs(Map<String, String[]> params, Method method,HttpSession session,Part part) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         for (Parameter param : method.getParameters()) {
             String key = null;
@@ -225,8 +226,12 @@ public class ControllerUtils {
             } else {
                 if (params.containsKey(param.getName())) {
                     key = param.getName();
-                } else if (param.isAnnotationPresent(Param.class)
-                        && params.containsKey(param.getAnnotation(Param.class).name())) {
+                }
+                
+                
+                else if (param.isAnnotationPresent(Param.class) && params.containsKey(param.getAnnotation(Param.class).name())) {
+                    
+                
                     key = param.getAnnotation(Param.class).name();
                 }
                 /// Traitement values
@@ -236,6 +241,10 @@ public class ControllerUtils {
                     ls.add(this.parse(params.get(key)[0], typage));
                 } else if (params.get(key).length > 1) {
                     ls.add(this.parse(params.get(key), typage));
+                }
+                else if (part != null) {
+                    Fichier fichier = new Fichier(part);
+                    ls.add(fichier);
                 } 
             }
 
