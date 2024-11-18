@@ -10,6 +10,10 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
+import outils.ValidationAnnotation.Max;
+import outils.ValidationAnnotation.Min;
+import outils.ValidationAnnotation.NotNull;
+import outils.ValidationAnnotation.Size;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -210,7 +214,7 @@ public class ControllerUtils {
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
                 ///prendre les attributs
                 Field[] f=c.getDeclaredFields();
-               
+                validate(nomObjet);
                 for (Field field : f) {
                     System.out.println(nomObjet+"."+field.getName());
                         if (params.containsKey(nomObjet+"."+field.getName())) {
@@ -251,5 +255,48 @@ public class ControllerUtils {
         }
         return ls.toArray();
     }   
+
+    public static void validate(Object object) throws ValidationException {
+        if (object == null)
+            throw new ValidationException("L'objet à valider ne peut pas être nul.");
+
+        for (Field field : object.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            try {
+                Object value = field.get(object);
+                validateField(field, value);
+            } catch (IllegalAccessException e) {
+                throw new ValidationException("Erreur d'accès au champ : " + field.getName(), e);
+            }
+        }
+    }
+
+    private static void validateField(Field field, Object value) throws ValidationException {
+        if (field.isAnnotationPresent(NotNull.class) && value == null) {
+            throw new ValidationException(field.getAnnotation(NotNull.class).message());
+        }
+        if (field.isAnnotationPresent(Min.class) && value instanceof Number) {
+            long minValue = field.getAnnotation(Min.class).value();
+            if (((Number) value).longValue() < minValue) {
+                throw new ValidationException(
+                        field.getAnnotation(Min.class).message().replace("{value}", String.valueOf(minValue)));
+            }
+        }
+        if (field.isAnnotationPresent(Max.class) && value instanceof Number) {
+            long maxValue = field.getAnnotation(Max.class).value();
+            if (((Number) value).longValue() > maxValue) {
+                throw new ValidationException(
+                        field.getAnnotation(Max.class).message().replace("{value}", String.valueOf(maxValue)));
+            }
+        }
+        if (field.isAnnotationPresent(Size.class) && value instanceof String) {
+            Size annotation = field.getAnnotation(Size.class);
+            int length = ((String) value).length();
+            if (length < annotation.min() || length > annotation.max()) {
+                throw new ValidationException(annotation.message().replace("{min}", String.valueOf(annotation.min()))
+                        .replace("{max}", String.valueOf(annotation.max())));
+            }
+        }
+    }
     
 }
