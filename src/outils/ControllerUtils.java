@@ -214,7 +214,6 @@ public class ControllerUtils {
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
                 ///prendre les attributs
                 Field[] f=c.getDeclaredFields();
-                validate(nomObjet);
                 for (Field field : f) {
                     System.out.println(nomObjet+"."+field.getName());
                         if (params.containsKey(nomObjet+"."+field.getName())) {
@@ -224,6 +223,8 @@ public class ControllerUtils {
                             toInvoke.invoke(o,this.parse(params.get(nomObjet+"."+field.getName())[0],field.getType()));
                         }
                 }
+                validate(o);
+
                 ls.add(o);
                 }
                 
