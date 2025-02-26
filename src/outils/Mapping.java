@@ -24,7 +24,7 @@ public class Mapping {
         }
         
        public Mapping(String classNames){
-            this.className=className;
+            this.className=classNames;
             
         }
         
