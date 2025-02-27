@@ -9,6 +9,8 @@ public class Fichier {
     String name;
     String path;
     byte[] content = new byte[0];
+    public Fichier() {
+    }
     public Fichier(String name, String path, byte[] content) {
         setName(name);
         setPath(path);
@@ -19,7 +21,7 @@ public class Fichier {
             setContent(Fichier.partToByte(filePart));
         }
         catch(Exception e){
-            throw new ServletException("Bug ato amin constructeur");
+            throw new ServletException(e.getMessage());
         }
         
     }
@@ -28,6 +30,7 @@ public class Fichier {
     }
     public static byte[] partToByte(Part filePart) throws Exception {
         try {
+            System.out.println("partToByte" +filePart);
             InputStream inputStream = filePart.getInputStream();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             byte[] buffer = new byte[4096];
@@ -41,7 +44,7 @@ public class Fichier {
             return bytes;
             
         } catch (Exception e) {
-            throw new ServletException("Tsy mety partToByte");
+            throw new ServletException(e.getMessage());
         }
        
     }

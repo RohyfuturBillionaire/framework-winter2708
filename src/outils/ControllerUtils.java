@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import outils.ValidationAnnotation.Max;
@@ -90,6 +91,19 @@ public class ControllerUtils {
     }
 
     
+    public String getURIwithoutContextPath(HttpServletRequest request) {
+        return request.getRequestURI().substring(request.getContextPath().length());
+        
+    }
+
+    public String getBaseUrl(HttpServletRequest req){
+        String scheme = req.getScheme(); 
+        String serverName = req.getServerName(); // localhost
+                            int serverPort = req.getServerPort(); // 8080
+                            String contextPath = req.getContextPath(); // /mywebapp
+                            String baseURL = scheme + "://" + serverName + ":" + serverPort + contextPath + "/";
+                            return baseURL;
+    }
 
     public static void getAllClassesSelonAnnotation(String packageToScan,Class<?>annotation,HashMap<String,Mapping> map) throws Exception{
         //List<String> controllerNames = new ArrayList<>();
@@ -98,6 +112,7 @@ public class ControllerUtils {
             String path = Thread.currentThread().getContextClassLoader().getResource(packageToScan.replace('.', '/')).getPath();
             String decodedPath = URLDecoder.decode(path, "UTF-8");
             File packageDir = new File(decodedPath);
+            System.out.println("package Dir" + packageDir);
 
             File[] files = packageDir.listFiles();
             if (files != null) {
@@ -162,47 +177,33 @@ public class ControllerUtils {
                 }
                 return false;
         }
-
-    // public Object[] getArgs(Map<String, String[]> params, Method method) throws Exception {
-    //     List<Object> ls = new ArrayList<Object>();
-    //     for (Parameter param : method.getParameters()) {
-    //         String key = null;
-    //         System.out.println(param.getName());
-    //         if (params.containsKey(param.getName())) {
-    //             key = param.getName();
-    //         } else if (param.isAnnotationPresent(Param.class)
-    //                 && params.containsKey(param.getAnnotation(Param.class).name())) {
-    //             key = param.getAnnotation(Param.class).name();
-    //         }
-    //         /// Traitement type
-    //         Class<?> typage = param.getType();
-    //         /// Traitement values
-           
-    //         if (params.get(key).length == 1) {
-    //             ls.add(this.parse(params.get(key)[0],typage));
-    //         } 
-    //         else if (params.get(key).length > 1) {
-    //             ls.add(this.parse(params.get(key),typage));
-    //         } 
-    //         else if (params.get(key) == null) {
-    //             ls.add(null);
-    //         }
-    //     }
-    //     return ls.toArray();
-    // }
-
-    public Object[] getArgs(Map<String, String[]> params, Method method,HttpSession session,Part part) throws Exception {
+    public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         for (Parameter param : method.getParameters()) {
             String key = null;
             /// Traitement type
             Class<?> typage = param.getType();
-           
+            System.out.println("param " + param.getType());
+            
             if (!param.getType().isPrimitive() && !param.getType().equals(String.class)) {
                 Class<?> c=param.getType();
                 if (c.equals(MySession.class)) {
                     ls.add( new MySession(session));
+                
+                }else if (c.equals(Fichier.class)) {
+                   
+                    if (param.isAnnotationPresent(Param.class)) {
+                        key = param.getAnnotation(Param.class).name();
+                    
+                    } else {
+                        key = param.getName();
+                    }
+                    
+                    System.out.println("key" + key);
+                    ls.add(new Fichier(req.getPart(key)));
                 }
+
+
                 else {
                     String nomObjet=null;
                 if(param.isAnnotationPresent(ObjectParam.class)){
@@ -229,27 +230,19 @@ public class ControllerUtils {
                 }
                 
             } else {
+                System.out.println("test de dernier minute");
                 if (params.containsKey(param.getName())) {
                     key = param.getName();
-                }
-                
-                
-                else if (param.isAnnotationPresent(Param.class) && params.containsKey(param.getAnnotation(Param.class).name())) {
-                    
-                
+                } else if (param.isAnnotationPresent(Param.class) && params.containsKey(param.getAnnotation(Param.class).name())) {
                     key = param.getAnnotation(Param.class).name();
                 }
                 /// Traitement values
-                 if (params.get(key) == null) {
+                if (params.get(key) == null) {
                     ls.add(null);
-                }else if (params.get(key).length == 1) {
+                } else if (params.get(key).length == 1) {
                     ls.add(this.parse(params.get(key)[0], typage));
                 } else if (params.get(key).length > 1) {
                     ls.add(this.parse(params.get(key), typage));
-                }
-                else if (part != null) {
-                    Fichier fichier = new Fichier(part);
-                    ls.add(fichier);
                 } 
             }
 
