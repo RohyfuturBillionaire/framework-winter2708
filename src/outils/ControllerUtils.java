@@ -189,8 +189,7 @@ public class ControllerUtils {
                 Class<?> c=param.getType();
                 if (c.equals(MySession.class)) {
                     ls.add( new MySession(session));
-                
-                }else if (c.equals(Fichier.class)) {
+                  }else if (c.equals(Fichier.class)) {
                    
                     if (param.isAnnotationPresent(Param.class)) {
                         key = param.getAnnotation(Param.class).name();
@@ -201,20 +200,19 @@ public class ControllerUtils {
                     
                     System.out.println("key" + key);
                     ls.add(new Fichier(req.getPart(key)));
-                }
-
-
-                else {
+                } else {
                     String nomObjet=null;
-                if(param.isAnnotationPresent(ObjectParam.class)){
-                    nomObjet=c.getAnnotation(ObjectParam.class).name();
-                }
-                else{
-                    nomObjet=param.getName();
-                }
+                        if(param.isAnnotationPresent(ObjectParam.class)){
+                            nomObjet=c.getAnnotation(ObjectParam.class).name();
+                        }
+                        else{
+                            nomObjet=param.getName();
+                        }
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
                 ///prendre les attributs
                 Field[] f=c.getDeclaredFields();
+                validate(o);
+               
                 for (Field field : f) {
                     System.out.println(nomObjet+"."+field.getName());
                         if (params.containsKey(nomObjet+"."+field.getName())) {
@@ -223,9 +221,7 @@ public class ControllerUtils {
                             Method toInvoke=c.getDeclaredMethod("set"+fieldName,field.getType());
                             toInvoke.invoke(o,this.parse(params.get(nomObjet+"."+field.getName())[0],field.getType()));
                         }
-                }
-                validate(o);
-
+                    }
                 ls.add(o);
                 }
                 
@@ -248,6 +244,7 @@ public class ControllerUtils {
 
         }
         return ls.toArray();
+
     }   
 
     public static void validate(Object object) throws ValidationException {
