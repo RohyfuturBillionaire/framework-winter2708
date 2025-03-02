@@ -34,7 +34,9 @@ public class FrontController extends HttpServlet {
         String urL = new ControllerUtils().getURIwithoutContextPath(req);
         System.out.println("here is the urL :"+urL);
         if (urL.contains("?")) {
+            System.out.println("ato izy");
             urL = urL.split("?")[0];
+            System.out.println( "uuuuu" +urL);
         }
 
         ControllerUtils cont = new ControllerUtils();

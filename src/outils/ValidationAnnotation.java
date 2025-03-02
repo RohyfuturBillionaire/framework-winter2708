@@ -19,6 +19,12 @@ public class ValidationAnnotation {
 
         String message() default "La valeur doit être supérieure ou égale à {value}.";
     }
+    
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Numeric {
+        String message() default "Le champ doit être numérique.";
+    }
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
@@ -51,6 +57,13 @@ public class ValidationAnnotation {
     public @interface Email {
         String message() default "Le champ doit contenir une adresse email valide.";
     }
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface NotEmpty {
+        String message() default "Le champ doit pas etre vide";
+    }
+
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
