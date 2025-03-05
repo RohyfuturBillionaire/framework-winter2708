@@ -181,6 +181,7 @@ public class ControllerUtils {
         }
     public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
+        
         for (Parameter param : method.getParameters()) {
             String key = null;
             /// Traitement type
