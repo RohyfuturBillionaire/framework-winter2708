@@ -270,14 +270,13 @@ public class ControllerUtils {
             System.out.println("annotation nature :" + iterable_element );    
         }
         
-        if (field.isAnnotationPresent(NotNull.class) && value == null) {
-            throw new ValidationException(field.getAnnotation(NotNull.class).message());
-        }
+        if (field.isAnnotationPresent(NotNull.class) && value == null) 
+        
+        {throw new ValidationException(field.getAnnotation(NotNull.class).message());}
 
-        if (field.isAnnotationPresent(NotEmpty.class) && value=="") {
-            throw new ValidationException(field.getAnnotation(NotEmpty.class).message());
-
-        }
+        if (field.isAnnotationPresent(NotEmpty.class) && value=="") 
+        
+        {throw new ValidationException(field.getAnnotation(NotEmpty.class).message());}
 
         if(field.isAnnotationPresent(Numeric.class))
             {   String ann=field.getAnnotation(Numeric.class).message();
