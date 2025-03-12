@@ -81,9 +81,9 @@ public class FrontController extends HttpServlet {
                         } else {
                             toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray, null));
                         }
-                    } else {
+                    } 
                         toPrint = iray.invoke(caller, (Object[]) null);
-                    }
+                    
 
                     if (ControllerUtils.checkRestMethod(iray, RestApi.class)) {
                         Gson json = new Gson();
@@ -119,8 +119,7 @@ public class FrontController extends HttpServlet {
                         } else if (toPrint instanceof ModelView) {
                             ModelView model = (ModelView) toPrint;
                             String view = model.getUrl();
-                            String uri = req.getRequestURI();
-                            String scheme = req.getScheme(); // http
+                       
                             
                             System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
                           

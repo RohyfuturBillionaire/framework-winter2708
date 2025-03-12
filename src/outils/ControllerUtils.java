@@ -10,14 +10,11 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
 import outils.ValidationAnnotation.Max;
 import outils.ValidationAnnotation.Min;
 import outils.ValidationAnnotation.NotEmpty;
 import outils.ValidationAnnotation.NotNull;
 import outils.ValidationAnnotation.Numeric;
-import outils.ValidationAnnotation.Size;
-import outils.ValidationException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -142,7 +139,7 @@ public class ControllerUtils {
                                             hm.put(getAnnotation.path(),m);
                                         }    
                                     }
-                                    else if (meth.isAnnotationPresent(Post.class)) {
+                                    if (meth.isAnnotationPresent(Post.class)) {
                                         if(hm.containsKey(getAnnotation.path())){
                                         
                                             hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"Post"));
@@ -179,7 +176,9 @@ public class ControllerUtils {
                 }
                 return false;
         }
-    public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
+
+        
+  public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         for (Parameter param : method.getParameters()) {
             String key = null;
@@ -235,7 +234,6 @@ public class ControllerUtils {
 
         }
         return ls.toArray();
-
     }   
 
     public  void validate(Object object,Map<String, String[]> params,String nomObjet) throws Exception {
@@ -243,7 +241,7 @@ public class ControllerUtils {
             throw new ValidationException("L'objet à valider ne peut pas être nul.");
 
         Class<?> c=object.getClass();
-        System.out.println("objet nature"+object);
+        System.out.println("objet nature"+nomObjet);
         for (Field field : c.getDeclaredFields()) {
             field.setAccessible(true);
             if (params.containsKey(nomObjet+"."+field.getName())) {
