@@ -180,7 +180,8 @@ public class ControllerUtils {
         
   public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
-        for (Parameter param : method.getParameters()) {
+        for (Parameter param : method.getParameters()) 
+        {
             String key = null;
             /// Traitement type
             Class<?> typage = param.getType();
@@ -241,7 +242,7 @@ public class ControllerUtils {
             throw new ValidationException("L'objet à valider ne peut pas être nul.");
 
         Class<?> c=object.getClass();
-        System.out.println("objet nature"+nomObjet);
+        System.out.println("objet nature xxxxx "+nomObjet);
         for (Field field : c.getDeclaredFields()) {
             field.setAccessible(true);
             if (params.containsKey(nomObjet+"."+field.getName())) {
@@ -252,7 +253,7 @@ public class ControllerUtils {
                     Object value = params.get(nomObjet+"."+field.getName())[0];
                     System.out.println("nature de la valeur"+ value);
                     validateField(field, value);
-                    // toInvoke.invoke(object, this.parse(value,field.getType()));
+                    toInvoke.invoke(object, this.parse(value,field.getType()));
     
                 } catch (Exception e) {
                     throw new ValidationException(e.getMessage());

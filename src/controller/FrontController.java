@@ -82,7 +82,8 @@ public class FrontController extends HttpServlet {
                             toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray, null));
                         }
                     } 
-                        toPrint = iray.invoke(caller, (Object[]) null);
+                    // else {}
+                    //     toPrint = iray.invoke(caller, (Object[]) null);
                     
 
                     if (ControllerUtils.checkRestMethod(iray, RestApi.class)) {
