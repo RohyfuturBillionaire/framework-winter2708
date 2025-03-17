@@ -205,7 +205,7 @@ public class ControllerUtils {
                 } else {
                     String nomObjet=null;
                         if(param.isAnnotationPresent(ObjectParam.class)){
-                            nomObjet=c.getAnnotation(ObjectParam.class).name();
+                            nomObjet=param.getAnnotation(ObjectParam.class).name();
                         }
                         else{
                             nomObjet=param.getName();
