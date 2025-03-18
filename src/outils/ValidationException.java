@@ -1,37 +1,17 @@
 package outils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class ValidationException extends Exception {
-    
-    private Map<String,List<String>> errors;
-    String errorUrl;
-    String errorMethod;
-    Map<String, String[]> paramsBeforeError;
-    
-    public ValidationException(Map<String,List<String>> errors) {
-        super("Validation error");
-        this.errors= errors;
+    ValueController valueController;
+    public void setValueController(ValueController valueController) {
+        this.valueController = valueController;
     }
 
-    public void setErrorMethod(String errorMethod) {
-        this.errorMethod = errorMethod;
+    public ValueController getValueController() {
+        return valueController;
     }
-
-    public void setErrorUrl(String errorUrl) {
-        this.errorUrl = errorUrl;
+    public ValidationException() {
+        super();
     }
-
-    public void setErrors(Map<String, List<String>> errors) {
-        this.errors = errors;
-    }
-    public void setParamsBeforeError(Map<String, String[]> paramsBeforeError) {
-        this.paramsBeforeError = paramsBeforeError;
-    }
-
-
 
     public ValidationException(String message) {
         super(message);
@@ -44,4 +24,9 @@ public class ValidationException extends Exception {
     public ValidationException(Throwable cause) {
         super(cause);
     }
+
+    public ValidationException(ValueController valueController) {
+        this.valueController = valueController;
+    }
+
 }

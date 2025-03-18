@@ -4,9 +4,7 @@ package controller;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
-
 import com.google.gson.Gson;
-
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.*;
@@ -14,7 +12,6 @@ import outils.*;
 @MultipartConfig
 public class FrontController extends HttpServlet {
     HashMap<String, Mapping> map = new HashMap<>();
-
     public void init() throws ServletException {
         try {
             String package_name = this.getInitParameter("package_name");
@@ -31,6 +28,7 @@ public class FrontController extends HttpServlet {
         System.out.println("here is the url :"+url);
         Boolean ifUrlExist = false;
         Object toPrint = null;
+        ValueController errrorsValue= null;
         String urL = new ControllerUtils().getURIwithoutContextPath(req);
         System.out.println("here is the urL :"+urL);
         if (urL.contains("?")) {
@@ -49,6 +47,8 @@ public class FrontController extends HttpServlet {
                     Class<?> clas = Class.forName(map.get(cle).getClassName());
                     Object caller = ControllerUtils.checkSession(clas, req.getSession());
                     Map<String, String[]> parameters = req.getParameterMap();
+
+
 
                     for (String cles  : parameters.keySet()) {
                         System.out.println("cles de :" + cles);
@@ -74,16 +74,23 @@ public class FrontController extends HttpServlet {
                         }
                     }
                     if (parameters != null) {
+
                         if (cont.checkSessionNeed(iray)) {
+                            Object[] objects=null;
+                            try {
+                                 objects=cont.getArgs(req,parameters, iray,req.getSession());    
+                            } catch (ValidationException e) {
+                                errrorsValue=e.getValueController();
+                                req.setAttribute("errors", errrorsValue);
+                            }
                             
-                            toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray,req.getSession()));
+                            
+                            toPrint = iray.invoke(caller,objects);
                         
                         } else {
                             toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray, null));
                         }
-                    } else {
-                        toPrint = iray.invoke(caller, (Object[]) null);
-                    }
+                    } 
 
                     if (ControllerUtils.checkRestMethod(iray, RestApi.class)) {
                         Gson json = new Gson();
@@ -94,7 +101,7 @@ public class FrontController extends HttpServlet {
                         } else if (toPrint instanceof ModelView) {
                             ModelView model = (ModelView) toPrint;
                              String view=model.getUrl();
-
+                            
                             RequestDispatcher dispat = req.getRequestDispatcher(view);
                             HashMap<String, Object> modelObjects = null;
                             if (model.getData() != null) {
@@ -121,10 +128,16 @@ public class FrontController extends HttpServlet {
                             String view = model.getUrl();
                             String uri = req.getRequestURI();
                             String scheme = req.getScheme(); // http
-                            
+                            RequestDispatcher dispat =null;
                             System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
-                          
-                            RequestDispatcher dispat = req.getRequestDispatcher("/"+view);
+                            if (errrorsValue==null) {
+                                 dispat = req.getRequestDispatcher("/"+view);     
+                            }
+                            else{
+                                dispat=req.getRequestDispatcher(uri);
+                            }
+
+                           
                             HashMap<String, Object> modelObjects = null;
                             if (model.getData() != null) {
                                 modelObjects = model.getData();
@@ -133,7 +146,11 @@ public class FrontController extends HttpServlet {
                                 }
                             }
                             
-
+                            // if (view.contains("redirect:")) {
+                            //     String[] split = view.split(":");
+                            //     res.sendRedirect(split[1]);
+                                
+                            // }
                             dispat.forward(req, res);
                         } else {
                             throw new Exception("invalid type");
