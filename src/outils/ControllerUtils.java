@@ -10,7 +10,6 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
 import outils.ValidationAnnotation.Max;
 import outils.ValidationAnnotation.Min;
 import outils.ValidationAnnotation.NotEmpty;
@@ -143,7 +142,7 @@ public class ControllerUtils {
                                             hm.put(getAnnotation.path(),m);
                                         }    
                                     }
-                                    else if (meth.isAnnotationPresent(Post.class)) {
+                                    if (meth.isAnnotationPresent(Post.class)) {
                                         if(hm.containsKey(getAnnotation.path())){
                                         
                                             hm.get(getAnnotation.path()).getVerbmethods().add(new VerbMethod(meth,"Post"));
@@ -180,7 +179,9 @@ public class ControllerUtils {
                 }
                 return false;
         }
-    public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
+
+        
+  public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
         
         for (Parameter param : method.getParameters()) {
@@ -207,6 +208,7 @@ public class ControllerUtils {
                 } else {
                     String nomObjet=null;
                         if(param.isAnnotationPresent(ObjectParam.class)){
+                            nomObjet=param.getAnnotation(ObjectParam.class).name();
                             nomObjet=param.getAnnotation(ObjectParam.class).name();
                         }
                         else{
@@ -247,7 +249,6 @@ public class ControllerUtils {
 
         }
         return ls.toArray();
-
     }   
 
     public  ValueController validate(Object object,Map<String, String[]> params,String nomObjet) throws Exception {
@@ -256,7 +257,7 @@ public class ControllerUtils {
 
         ValueController valueController = new ValueController();
         Class<?> c=object.getClass();
-        System.out.println("objet nature"+object);
+        System.out.println("objet nature xxxxx "+nomObjet);
         for (Field field : c.getDeclaredFields()) {
             String nomField=nomObjet+"."+field.getName();
             field.setAccessible(true);
