@@ -4,9 +4,7 @@ package controller;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
-
 import com.google.gson.Gson;
-
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.*;
@@ -14,7 +12,6 @@ import outils.*;
 @MultipartConfig
 public class FrontController extends HttpServlet {
     HashMap<String, Mapping> map = new HashMap<>();
-
     public void init() throws ServletException {
         try {
             String package_name = this.getInitParameter("package_name");
@@ -31,7 +28,9 @@ public class FrontController extends HttpServlet {
         System.out.println("here is the url :"+url);
         Boolean ifUrlExist = false;
         Object toPrint = null;
+        ValueController errrorsValue= null;
         String urL = new ControllerUtils().getURIwithoutContextPath(req);
+        String urlError=null;
         System.out.println("here is the urL :"+urL);
         if (urL.contains("?")) {
             System.out.println("ato izy");
@@ -49,6 +48,8 @@ public class FrontController extends HttpServlet {
                     Class<?> clas = Class.forName(map.get(cle).getClassName());
                     Object caller = ControllerUtils.checkSession(clas, req.getSession());
                     Map<String, String[]> parameters = req.getParameterMap();
+
+
 
                     for (String cles  : parameters.keySet()) {
                         System.out.println("cles de :" + cles);
@@ -74,17 +75,32 @@ public class FrontController extends HttpServlet {
                         }
                     }
                     if (parameters != null) {
+                          Object[] objects=null;
                         if (cont.checkSessionNeed(iray)) {
+                          
+                            try {
+                              objects=cont.getArgs(req,parameters, iray,req.getSession());    
+                            } catch (ValidationException e) {
+                                errrorsValue=e.getValueController();
+                                urlError=e.getUrl();
+                                
+                            }
                             
-                            toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray,req.getSession()));
+                            
+                            toPrint = iray.invoke(caller,objects);
                         
                         } else {
-                            toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray, null));
+                            try {
+                                objects=cont.getArgs(req,parameters, iray, null);    
+                                toPrint = iray.invoke(caller,objects);
+                            } catch (ValidationException e) {
+                               errrorsValue=e.getValueController();
+                               urlError=e.getUrl();
+                           }
+                        
+                           
                         }
                     } 
-                    // else {}
-                    //     toPrint = iray.invoke(caller, (Object[]) null);
-                    
 
                     if (ControllerUtils.checkRestMethod(iray, RestApi.class)) {
                         Gson json = new Gson();
@@ -95,7 +111,7 @@ public class FrontController extends HttpServlet {
                         } else if (toPrint instanceof ModelView) {
                             ModelView model = (ModelView) toPrint;
                              String view=model.getUrl();
-
+                            
                             RequestDispatcher dispat = req.getRequestDispatcher(view);
                             HashMap<String, Object> modelObjects = null;
                             if (model.getData() != null) {
@@ -115,29 +131,57 @@ public class FrontController extends HttpServlet {
 
                     else {
 
-                        if (toPrint instanceof String) {
-                            out.print(toPrint);
-                        } else if (toPrint instanceof ModelView) {
-                            ModelView model = (ModelView) toPrint;
-                            String view = model.getUrl();
-                       
+                        if (errrorsValue!=null) {
+                            // String uri = req.getRequestURI();
+                            System.out.println("error url :"+urlError);
                             
-                            System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
-                          
-                            RequestDispatcher dispat = req.getRequestDispatcher("/"+view);
-                            HashMap<String, Object> modelObjects = null;
-                            if (model.getData() != null) {
-                                modelObjects = model.getData();
-                                for (String nomdata : modelObjects.keySet()) {
-                                    req.setAttribute(nomdata, modelObjects.get(nomdata));
+                            HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(req) {
+                                @Override
+                                public String getMethod() {
+                                    return "GET";
                                 }
-                            }
-                            
-
-                            dispat.forward(req, res);
+                            };
+            
+                            wrappedRequest.setAttribute("errors", errrorsValue);
+                            // Dispatch the new request to errorUrl
+                            RequestDispatcher dispatcher = wrappedRequest.getRequestDispatcher(urlError);
+                            dispatcher.forward(wrappedRequest,res);
                         } else {
-                            throw new Exception("invalid type");
+
+                            if (toPrint instanceof String) {
+                                out.print(toPrint);
+                            } else if (toPrint instanceof ModelView) {
+                                ModelView model = (ModelView) toPrint;
+                                String view = model.getUrl();
+                                 // http
+                                RequestDispatcher dispat =null;
+                                System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
+                                dispat = req.getRequestDispatcher("/"+view);     
+                                
+                                
+    
+                               
+                                HashMap<String, Object> modelObjects = null;
+                                if (model.getData() != null) {
+                                    modelObjects = model.getData();
+                                    for (String nomdata : modelObjects.keySet()) {
+                                        req.setAttribute(nomdata, modelObjects.get(nomdata));
+                                    }
+                                }
+                                
+                                // if (view.contains("redirect:")) {
+                                //     String[] split = view.split(":");
+                                //     res.sendRedirect(split[1]);
+                                    
+                                // }
+                                dispat.forward(req, res);
+                            } else {
+                                throw new Exception("invalid type");
+                            }
+
                         }
+
+                        
                     }
 
                     ifUrlExist = true;

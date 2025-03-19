@@ -15,6 +15,9 @@ import outils.ValidationAnnotation.Min;
 import outils.ValidationAnnotation.NotEmpty;
 import outils.ValidationAnnotation.NotNull;
 import outils.ValidationAnnotation.Numeric;
+import outils.ValidationAnnotation.Size;
+import outils.ValidationException;
+import outils.ErrorUrl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -180,8 +183,8 @@ public class ControllerUtils {
         
   public Object[] getArgs(HttpServletRequest req,Map<String, String[]> params, Method method,HttpSession session) throws Exception {
         List<Object> ls = new ArrayList<Object>();
-        for (Parameter param : method.getParameters()) 
-        {
+        
+        for (Parameter param : method.getParameters()) {
             String key = null;
             /// Traitement type
             Class<?> typage = param.getType();
@@ -206,15 +209,26 @@ public class ControllerUtils {
                     String nomObjet=null;
                         if(param.isAnnotationPresent(ObjectParam.class)){
                             nomObjet=param.getAnnotation(ObjectParam.class).name();
+                            nomObjet=param.getAnnotation(ObjectParam.class).name();
                         }
                         else{
                             nomObjet=param.getName();
                         }
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
-                ///prendre les attributs
-                validate(o,params,nomObjet);
-                ls.add(o);
+                ///prendre les attributs//////
+                String url=method.getAnnotation(ErrorUrl.class).url();
+                ValueController valueController=validate(o,params,nomObjet);
+                
+                if (valueController.getErrorsMessage().isEmpty()) {
+                    ls.add(o);    
+                } else {
+                     
+                    ValidationException vex=  new ValidationException(valueController);
+                    vex.setUrl(url);  
+                    throw vex;
                 }
+
+            }
                 
             } else {
                 System.out.println("test de dernier minute");
@@ -237,46 +251,60 @@ public class ControllerUtils {
         return ls.toArray();
     }   
 
-    public  void validate(Object object,Map<String, String[]> params,String nomObjet) throws Exception {
+    public  ValueController validate(Object object,Map<String, String[]> params,String nomObjet) throws Exception {
         if (object == null)
-            throw new ValidationException("L'objet à valider ne peut pas être nul.");
+            throw new Exception("L'objet à valider ne peut pas être nul.");
 
+        ValueController valueController = new ValueController();
         Class<?> c=object.getClass();
         System.out.println("objet nature xxxxx "+nomObjet);
         for (Field field : c.getDeclaredFields()) {
+            String nomField=nomObjet+"."+field.getName();
             field.setAccessible(true);
-            if (params.containsKey(nomObjet+"."+field.getName())) {
-                System.out.println(params.containsKey(nomObjet+"."+field.getName()));
+            if (params.containsKey(nomField)) {
+                System.out.println(params.containsKey(nomField));
                 String fieldName=field.getName().substring(0, 1).toUpperCase() +field.getName().substring(1);
                 Method toInvoke=c.getDeclaredMethod("set"+fieldName,field.getType());
                 try {
-                    Object value = params.get(nomObjet+"."+field.getName())[0];
+                    Object value = params.get(nomField)[0];
                     System.out.println("nature de la valeur"+ value);
-                    validateField(field, value);
-                    toInvoke.invoke(object, this.parse(value,field.getType()));
+                    String errors=validateField(field, value);
+                    
+                    if (errors!=null) {
+                        ErrorMessage errorMessage=new ErrorMessage();
+                        errorMessage.setMessage(errors);
+                        errorMessage.setValue(value.toString());
+                        valueController.add(nomObjet, errorMessage);
+                    }
+                    else{
+                        toInvoke.invoke(object, this.parse(value,field.getType()));
+                    }
+                    
     
                 } catch (Exception e) {
-                    throw new ValidationException(e.getMessage());
+                    
                 }    
             }
             
         }
+        return  valueController;
     }
 
-    private void validateField(Field field, Object value) throws ValidationException {
+
+    private String validateField(Field field, Object value) throws ValidationException {
         System.out.println("goo");
+        String message=null;
         for (Annotation iterable_element : field.getAnnotations()) {
             System.out.println("annotation nature :" + iterable_element );    
         }
         
-        if (field.isAnnotationPresent(NotNull.class) && value == null) {
-            throw new ValidationException(field.getAnnotation(NotNull.class).message());
-        }
+        if (field.isAnnotationPresent(NotNull.class) && value == null) 
+        
+        { return field.getAnnotation(NotNull.class).message();}
 
-        if (field.isAnnotationPresent(NotEmpty.class) && value=="") {
-            throw new ValidationException(field.getAnnotation(NotEmpty.class).message());
-
-        }
+        if (field.isAnnotationPresent(NotEmpty.class) && value=="") 
+        
+        { return field.getAnnotation(NotEmpty.class).message();}
 
         if(field.isAnnotationPresent(Numeric.class))
             {   String ann=field.getAnnotation(Numeric.class).message();
@@ -284,7 +312,7 @@ public class ControllerUtils {
                 try {
                     this.parse(value,field.getType());
                     } catch (Exception e) {
-                     throw new ValidationException(ann);
+                        return ann;
                 }
                 
             }
@@ -292,15 +320,13 @@ public class ControllerUtils {
         if (field.isAnnotationPresent(Min.class)) {
             long minValue = field.getAnnotation(Min.class).value();
             if ( (double)this.parse(value, field.getType()) < minValue) {
-                throw new ValidationException(
-                        field.getAnnotation(Min.class).message().replace("{value}", String.valueOf(minValue)));
+               return field.getAnnotation(Min.class).message().replace("{value}", String.valueOf(minValue));
             }
         }
         if (field.isAnnotationPresent(Max.class)) {
             long maxValue = field.getAnnotation(Max.class).value();
             if ((double) this.parse(value, field.getType()) > maxValue) {
-                throw new ValidationException(
-                        field.getAnnotation(Max.class).message().replace("{value}", String.valueOf(maxValue)));
+               return field.getAnnotation(Max.class).message().replace("{value}", String.valueOf(maxValue));
             }
         }
         // if (field.isAnnotationPresent(Size.class) && value instanceof String) {
@@ -311,6 +337,58 @@ public class ControllerUtils {
         //                 .replace("{max}", String.valueOf(annotation.max())));
         //     }
         // }
+
+        return message;
     }
+
+
+    // private void validateField(Field field, Object value) throws ValidationException {
+    //     System.out.println("goo");
+    //     for (Annotation iterable_element : field.getAnnotations()) {
+    //         System.out.println("annotation nature :" + iterable_element );    
+    //     }
+        
+    //     if (field.isAnnotationPresent(NotNull.class) && value == null) 
+        
+    //     {throw new ValidationException(field.getAnnotation(NotNull.class).message());}
+
+    //     if (field.isAnnotationPresent(NotEmpty.class) && value=="") 
+        
+    //     {throw new ValidationException(field.getAnnotation(NotEmpty.class).message());}
+
+    //     if(field.isAnnotationPresent(Numeric.class))
+    //         {   String ann=field.getAnnotation(Numeric.class).message();
+    //             System.out.println("annotation ty"+ ann);
+    //             try {
+    //                 this.parse(value,field.getType());
+    //                 } catch (Exception e) {
+    //                  throw new ValidationException(ann);
+    //             }
+                
+    //         }
+
+    //     if (field.isAnnotationPresent(Min.class)) {
+    //         long minValue = field.getAnnotation(Min.class).value();
+    //         if ( (double)this.parse(value, field.getType()) < minValue) {
+    //             throw new ValidationException(
+    //                     field.getAnnotation(Min.class).message().replace("{value}", String.valueOf(minValue)));
+    //         }
+    //     }
+    //     if (field.isAnnotationPresent(Max.class)) {
+    //         long maxValue = field.getAnnotation(Max.class).value();
+    //         if ((double) this.parse(value, field.getType()) > maxValue) {
+    //             throw new ValidationException(
+    //                     field.getAnnotation(Max.class).message().replace("{value}", String.valueOf(maxValue)));
+    //         }
+    //     }
+    //     // if (field.isAnnotationPresent(Size.class) && value instanceof String) {
+    //     //     Size annotation = field.getAnnotation(Size.class);
+    //     //     int length = ((String) value).length();
+    //     //     if (length < annotation.min() || length > annotation.max()) {
+    //     //         throw new ValidationException(annotation.message().replace("{min}", String.valueOf(annotation.min()))
+    //     //                 .replace("{max}", String.valueOf(annotation.max())));
+    //     //     }
+    //     // }
+    // }
     
 }
