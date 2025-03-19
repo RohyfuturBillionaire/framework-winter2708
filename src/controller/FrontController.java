@@ -30,6 +30,7 @@ public class FrontController extends HttpServlet {
         Object toPrint = null;
         ValueController errrorsValue= null;
         String urL = new ControllerUtils().getURIwithoutContextPath(req);
+        String urlError=null;
         System.out.println("here is the urL :"+urL);
         if (urL.contains("?")) {
             System.out.println("ato izy");
@@ -74,21 +75,30 @@ public class FrontController extends HttpServlet {
                         }
                     }
                     if (parameters != null) {
-
+                          Object[] objects=null;
                         if (cont.checkSessionNeed(iray)) {
-                            Object[] objects=null;
+                          
                             try {
-                                 objects=cont.getArgs(req,parameters, iray,req.getSession());    
+                              objects=cont.getArgs(req,parameters, iray,req.getSession());    
                             } catch (ValidationException e) {
                                 errrorsValue=e.getValueController();
-                                req.setAttribute("errors", errrorsValue);
+                                urlError=e.getUrl();
+                                
                             }
                             
                             
                             toPrint = iray.invoke(caller,objects);
                         
                         } else {
-                            toPrint = iray.invoke(caller, cont.getArgs(req,parameters, iray, null));
+                            try {
+                                objects=cont.getArgs(req,parameters, iray, null);    
+                                toPrint = iray.invoke(caller,objects);
+                            } catch (ValidationException e) {
+                               errrorsValue=e.getValueController();
+                               urlError=e.getUrl();
+                           }
+                        
+                           
                         }
                     } 
 
@@ -121,40 +131,57 @@ public class FrontController extends HttpServlet {
 
                     else {
 
-                        if (toPrint instanceof String) {
-                            out.print(toPrint);
-                        } else if (toPrint instanceof ModelView) {
-                            ModelView model = (ModelView) toPrint;
-                            String view = model.getUrl();
-                            String uri = req.getRequestURI();
-                            String scheme = req.getScheme(); // http
-                            RequestDispatcher dispat =null;
-                            System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
-                            if (errrorsValue==null) {
-                                 dispat = req.getRequestDispatcher("/"+view);     
-                            }
-                            else{
-                                dispat=req.getRequestDispatcher(uri);
+                        if (errrorsValue!=null) {
+                            // String uri = req.getRequestURI();
+                            System.out.println("error url :"+urlError);
+                            
+                            HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(req) {
+                                @Override
+                                public String getMethod() {
+                                    return "GET";
+                                }
+                            };
+            
+                            wrappedRequest.setAttribute("errors", errrorsValue);
+                            // Dispatch the new request to errorUrl
+                            RequestDispatcher dispatcher = wrappedRequest.getRequestDispatcher(urlError);
+                            dispatcher.forward(wrappedRequest,res);
+                        } else {
+
+                            if (toPrint instanceof String) {
+                                out.print(toPrint);
+                            } else if (toPrint instanceof ModelView) {
+                                ModelView model = (ModelView) toPrint;
+                                String view = model.getUrl();
+                                 // http
+                                RequestDispatcher dispat =null;
+                                System.out.println("here is the view context :"+new ControllerUtils().getBaseUrl(req));
+                                dispat = req.getRequestDispatcher("/"+view);     
+                                
+                                
+    
+                               
+                                HashMap<String, Object> modelObjects = null;
+                                if (model.getData() != null) {
+                                    modelObjects = model.getData();
+                                    for (String nomdata : modelObjects.keySet()) {
+                                        req.setAttribute(nomdata, modelObjects.get(nomdata));
+                                    }
+                                }
+                                
+                                // if (view.contains("redirect:")) {
+                                //     String[] split = view.split(":");
+                                //     res.sendRedirect(split[1]);
+                                    
+                                // }
+                                dispat.forward(req, res);
+                            } else {
+                                throw new Exception("invalid type");
                             }
 
-                           
-                            HashMap<String, Object> modelObjects = null;
-                            if (model.getData() != null) {
-                                modelObjects = model.getData();
-                                for (String nomdata : modelObjects.keySet()) {
-                                    req.setAttribute(nomdata, modelObjects.get(nomdata));
-                                }
-                            }
-                            
-                            // if (view.contains("redirect:")) {
-                            //     String[] split = view.split(":");
-                            //     res.sendRedirect(split[1]);
-                                
-                            // }
-                            dispat.forward(req, res);
-                        } else {
-                            throw new Exception("invalid type");
                         }
+
+                        
                     }
 
                     ifUrlExist = true;

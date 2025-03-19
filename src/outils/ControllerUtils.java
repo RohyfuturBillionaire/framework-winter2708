@@ -18,6 +18,7 @@ import outils.ValidationAnnotation.NotNull;
 import outils.ValidationAnnotation.Numeric;
 import outils.ValidationAnnotation.Size;
 import outils.ValidationException;
+import outils.ErrorUrl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
@@ -206,22 +207,26 @@ public class ControllerUtils {
                 } else {
                     String nomObjet=null;
                         if(param.isAnnotationPresent(ObjectParam.class)){
-                            nomObjet=c.getAnnotation(ObjectParam.class).name();
+                            nomObjet=param.getAnnotation(ObjectParam.class).name();
                         }
                         else{
                             nomObjet=param.getName();
                         }
                 Object o=c.getConstructor((Class[])null).newInstance((Object[])null);
-                ///prendre les attributs
+                ///prendre les attributs//////
+                String url=method.getAnnotation(ErrorUrl.class).url();
                 ValueController valueController=validate(o,params,nomObjet);
+                
                 if (valueController.getErrorsMessage().isEmpty()) {
-                    ls.add(o);
+                    ls.add(o);    
                 } else {
-                    throw new ValidationException(valueController);
+                     
+                    ValidationException vex=  new ValidationException(valueController);
+                    vex.setUrl(url);  
+                    throw vex;
                 }
 
-                
-                }
+            }
                 
             } else {
                 System.out.println("test de dernier minute");
