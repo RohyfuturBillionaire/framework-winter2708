@@ -54,7 +54,7 @@ public class FrontController extends HttpServlet {
                     Map<String, String[]> parameters = req.getParameterMap();
                     User user=(User)req.getSession().getAttribute("user");
                     if (clas.isAnnotationPresent(Auth.class)) {
-                        if (user.getRole()!=clas.getAnnotation(Auth.class).role()) {
+                        if (!user.getRole().equals(clas.getAnnotation(Auth.class).role())) {
                             unAutorized=true;
                             break;
                         }
@@ -85,7 +85,7 @@ public class FrontController extends HttpServlet {
                         }
                     }
                     if (iray.isAnnotationPresent(Auth.class)) {
-                        if (user.getRole()!=iray.getAnnotation(Auth.class).role()) {
+                        if (!user.getRole().equals(iray.getAnnotation(Auth.class).role())) {
                             unAutorized=true;
                             break;
                         }
@@ -107,7 +107,7 @@ public class FrontController extends HttpServlet {
                         
                         } else {
                             try {
-                                objects=cont.getArgs(req,parameters, iray, null);    
+                                objects=cont.getArgs(req,parameters, iray,req.getSession());    
                                 toPrint = iray.invoke(caller,objects);
                             } catch (ValidationException e) {
                                errrorsValue=e.getValueController();
@@ -205,32 +205,33 @@ public class FrontController extends HttpServlet {
                 }
             }
 
-            if (!unAutorized) {
-            res.setStatus(HttpServletResponse.SC_FORBIDDEN); // Sets the status code to 404
-            res.setContentType("text/html");
-            out.print("<!DOCTYPE html>");
-            out.print("<html lang=\"en\">");
-            out.print("<head>");
-
-            out.print("<meta charset=\"UTF-8\">");
-            out.print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
-            out.print("<title>403 - Access denied</title>");
-            out.print("<style>");
-            out.print("body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }");
-            out.print("h1 { font-size: 50px; color: #FF6347; }");
-            out.print("p { font-size: 20px; color: #333; }");
-            out.print("</style>");
-            out.print("</head>");
-            out.print("<body>");
-            out.print("<h1>403</h1>");
-            out.print("<p>Oops! you dont have access to this page sorry.</p>");
-            out.print("<p>Please go back to the homepage.</p>");
-            out.print("</body>");
-            out.print("</html>");
-                
-            }
+            if (unAutorized) {
+                res.setStatus(HttpServletResponse.SC_FORBIDDEN); // Sets the status code to 404
+                res.setContentType("text/html");
+                out.print("<!DOCTYPE html>");
+                out.print("<html lang=\"en\">");
+                out.print("<head>");
+    
+                out.print("<meta charset=\"UTF-8\">");
+                out.print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+                out.print("<title>403 - Access denied</title>");
+                out.print("<style>");
+                out.print("body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }");
+                out.print("h1 { font-size: 50px; color: #FF6347; }");
+                out.print("p { font-size: 20px; color: #333; }");
+                out.print("</style>");
+                out.print("</head>");
+                out.print("<body>");
+                out.print("<h1>403</h1>");
+                out.print("<p>Oops! you dont have access to this page sorry.</p>");
+                out.print("<p>Please go back to the homepage.</p>");
+                out.print("</body>");
+                out.print("</html>");
+                    
+                }
             
-            if (!ifUrlExist) {
+            
+            else if (!ifUrlExist) {
             res.setStatus(HttpServletResponse.SC_NOT_FOUND); // Sets the status code to 404
             res.setContentType("text/html");
             out.print("<!DOCTYPE html>");
@@ -253,6 +254,8 @@ public class FrontController extends HttpServlet {
             out.print("</body>");
             out.print("</html>");
             }
+            
+
         } catch (Exception e) {
             throw new ServletException(e);
         }
