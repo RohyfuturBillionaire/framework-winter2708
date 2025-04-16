@@ -53,8 +53,13 @@ public class FrontController extends HttpServlet {
                     Object caller = ControllerUtils.checkSession(clas, req.getSession());
                     Map<String, String[]> parameters = req.getParameterMap();
                     User user=(User)req.getSession().getAttribute("user");
-                    if (clas.isAnnotationPresent(Auth.class)) {
-                        if (!user.getRole().equals(clas.getAnnotation(Auth.class).role())) {
+                    
+                     if (clas.isAnnotationPresent(Auth.class)) {
+                        if (user==null) {
+                            unAutorized=true;
+                            break;
+                        }
+                        else if (!user.getRole().equals(clas.getAnnotation(Auth.class).role())) {
                             unAutorized=true;
                             break;
                         }
@@ -85,7 +90,11 @@ public class FrontController extends HttpServlet {
                         }
                     }
                     if (iray.isAnnotationPresent(Auth.class)) {
-                        if (!user.getRole().equals(iray.getAnnotation(Auth.class).role())) {
+                        if (user==null) {
+                            unAutorized=true;
+                            break;
+                        }
+                        else if (!user.getRole().equals(iray.getAnnotation(Auth.class).role())) {
                             unAutorized=true;
                             break;
                         }
